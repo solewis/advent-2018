@@ -10,11 +10,11 @@ object day1 extends App {
   println(s"PART 1: $part1")
 
   @tailrec
-  def findFirstDuplicate(changes: Vector[Int], currentFreq: Int, position: Int = 1, seen: Set[Int] = Set()): Int = {
+  def findFirstDuplicate(changes: Stream[Int], currentFreq: Int = 0, seen: Set[Int] = Set()): Int = {
     if (seen.contains(currentFreq)) currentFreq
-    else findFirstDuplicate(changes, currentFreq + changes(position % changes.size), position + 1, seen + currentFreq)
+    else findFirstDuplicate(changes.tail, currentFreq + changes.head, seen + currentFreq)
   }
 
-  val part2 = findFirstDuplicate(frequencyChanges, frequencyChanges.head)
+  val part2 = findFirstDuplicate(Stream.continually(frequencyChanges.toStream).flatten)
   println(s"PART 2: $part2")
 }

@@ -13,11 +13,12 @@ object day5 extends App {
     else react(str, position + 1)
   }
 
-  val part1 = react(input).length
+  val reactedInput = react(input)
+  val part1 = reactedInput.length
   println(s"PART 1: $part1")
 
   val part2 = ('a' to 'z')
-    .map(ch => input.replace(ch.toString, "").replace(ch.toUpper.toString, ""))
+    .map(ch => reactedInput.filter(_.toLower != ch))
     .map(react(_))
     .minBy(_.length)
     .length

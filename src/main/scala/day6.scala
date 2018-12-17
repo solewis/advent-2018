@@ -10,8 +10,8 @@ object day6 extends App {
   val inputRegex = """(\d+), (\d+)""".r
   val mappedCoordinates = input.map { case inputRegex(x, y) => Coordinate(x.toInt, y.toInt) }.toList
 
-  val xRange = mappedCoordinates.map(_.x).min - 1 to mappedCoordinates.map(_.x).max + 1
-  val yRange = mappedCoordinates.map(_.y).min - 1 to mappedCoordinates.map(_.y).max + 1
+  val xRange = mappedCoordinates.map(_.x).min to mappedCoordinates.map(_.x).max
+  val yRange = mappedCoordinates.map(_.y).min to mappedCoordinates.map(_.y).max
 
   //Form a square that surrounds all mapped coordinates, the graph is a list of all those points
   val graph = xRange.flatMap(x => yRange.map(y => Coordinate(x, y)))

@@ -22,6 +22,7 @@ object day6 extends App {
   }
 
   def isOnEdge(point: Coordinate): Boolean = point.x == xRange.start || point.x == xRange.end || point.y == yRange.start || point.y == yRange.end
+
   val infiniteMappedCoordinates = graph.filter(isOnEdge).flatMap(closestCoordinate).toSet
 
   val part1_2 = graph

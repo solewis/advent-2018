@@ -2,48 +2,41 @@ import scala.io.Source
 
 object day6 extends App {
 
-  case class Coordinate(x: Int, y: Int)
+  case class Coordinate(x: Int, y: Int) {
+    def manhattanDistance(other: Coordinate): Int = Math.abs(x - other.x) + Math.abs(y - other.y)
+  }
 
   val input = Source.fromResource("day6.txt").getLines()
   val inputRegex = """(\d+), (\d+)""".r
   val mappedCoordinates = input.map { case inputRegex(x, y) => Coordinate(x.toInt, y.toInt) }.toList
 
-  val leftMost = mappedCoordinates.map(_.x).min - 1
-  val topMost = mappedCoordinates.map(_.y).min - 1
-  val rightMost = mappedCoordinates.map(_.x).max + 1
-  val bottomMost = mappedCoordinates.map(_.y).max + 1
+  val xRange = mappedCoordinates.map(_.x).min - 1 to mappedCoordinates.map(_.x).max + 1
+  val yRange = mappedCoordinates.map(_.y).min - 1 to mappedCoordinates.map(_.y).max + 1
 
   //Form a square that surrounds all mapped coordinates, the graph is a list of all those points
-  val graph = (leftMost to rightMost).flatMap(x => (topMost to bottomMost).map(y => Coordinate(x, y)))
-
-  def manhattanDistance(a: Coordinate, b: Coordinate): Int = Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+  val graph = xRange.flatMap(x => yRange.map(y => Coordinate(x, y)))
 
   def closestCoordinate(point: Coordinate): Option[Coordinate] = {
-    mappedCoordinates
-      .map(coordinate => coordinate -> manhattanDistance(point, coordinate))
-      .sortBy(_._2) match {
-      case a :: b :: _ if a._2 != b._2 => Some(a._1)
-      case _ => None
-    }
+    val List(a, b, _*) = mappedCoordinates.sortBy(_.manhattanDistance(point))
+    if (a.manhattanDistance(point) == b.manhattanDistance(point)) None else Some(a)
   }
 
-  //Every point in the graph tupled with it's closest mapped coordinate if there is only 1
-  val closestMappedCoordinates: Seq[(Coordinate, Option[Coordinate])] = graph.map(point => point -> closestCoordinate(point))
+  def isOnEdge(point: Coordinate): Boolean = point.x == xRange.start || point.x == xRange.end || point.y == yRange.start || point.y == yRange.end
+  val infiniteMappedCoordinates = graph.filter(isOnEdge).flatMap(closestCoordinate).toSet
 
-  //Any mapped coordinate which is the closest point on the edge of the graph is assumed infinite area
-  val infiniteMappedCoordinates = closestMappedCoordinates.filter { case (point, _) =>
-    point.x == leftMost || point.x == rightMost || point.y == topMost || point.y == bottomMost
-  }.flatMap(_._2).toSet
+  val part1_2 = graph
+    .flatMap(closestCoordinate)
+    .filterNot(infiniteMappedCoordinates.contains)
+    .groupBy(identity)
+    .map(_._2.size)
+    .max
 
-  val finiteMappedCoordinates = mappedCoordinates.filterNot(infiniteMappedCoordinates.contains)
+  println(s"PART 1: $part1_2")
 
-  def area(coordinate: Coordinate): Int = closestMappedCoordinates.count(_._2.contains(coordinate))
+  def totalDistance(point: Coordinate): Int = mappedCoordinates.map(_.manhattanDistance(point)).sum
 
-  val part1 = finiteMappedCoordinates.map(area).max
-  println(s"PART 1: $part1")
-
-  def totalDistance(point: Coordinate): Int = mappedCoordinates.map(manhattanDistance(_, point)).sum
-
-  val part2 = graph.map(totalDistance).count(_ < 10000)
+  val part2 = graph
+    .map(totalDistance)
+    .count(_ < 10000)
   println(s"PART 2: $part2")
 }

@@ -5,9 +5,7 @@ object day6 extends App {
   case class Coordinate(x: Int, y: Int)
 
   val input = Source.fromResource("day6.txt").getLines()
-
   val inputRegex = """(\d+), (\d+)""".r
-
   val mappedCoordinates = input.map { case inputRegex(x, y) => Coordinate(x.toInt, y.toInt) }.toList
 
   val leftMost = mappedCoordinates.map(_.x).min - 1
@@ -29,7 +27,8 @@ object day6 extends App {
     }
   }
 
-  val closestMappedCoordinates = graph.map(point => point -> closestCoordinate(point))
+  //Every point in the graph tupled with it's closest mapped coordinate if there is only 1
+  val closestMappedCoordinates: Seq[(Coordinate, Option[Coordinate])] = graph.map(point => point -> closestCoordinate(point))
 
   //Any mapped coordinate which is the closest point on the edge of the graph is assumed infinite area
   val infiniteMappedCoordinates = closestMappedCoordinates.filter { case (point, _) =>

@@ -18,8 +18,6 @@ object day4 extends App {
     val mostFrequentSleepMinuteCount: Int = if (allSleepMinutes.isEmpty) -1 else allSleepMinutes.groupBy(identity).mapValues(_.size).maxBy(_._2)._2
   }
 
-  case class Entry(time: LocalDateTime, id: Option[Int], action: Int) //action 1=start, 2=sleep, 3=wake
-
   val startRegex = """\[(.*?)\] Guard #(\d+) begins shift""".r
   val sleepRegex = """\[(.*?)\] falls asleep""".r
   val wakeRegex = """\[(.*?)\] wakes up""".r

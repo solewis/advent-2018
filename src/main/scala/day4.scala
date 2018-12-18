@@ -7,7 +7,7 @@ object day4 extends App {
 
   val input = Source.fromResource("day4.txt").getLines.toList
 
-  case class Shift(id: Int, startTime: LocalDateTime, sleepTimes: Seq[LocalDateTime] = Nil, wakeTimes: Seq[LocalDateTime] = Nil)
+  case class Shift(id: Int, sleepTimes: Seq[LocalDateTime] = Nil, wakeTimes: Seq[LocalDateTime] = Nil)
 
   case class Guard(id: Int, shifts: Seq[Shift]) {
     val allSleepTimes: Seq[LocalDateTime] = shifts.flatMap(_.sleepTimes)
@@ -18,16 +18,9 @@ object day4 extends App {
     val mostFrequentSleepMinuteCount: Int = if (allSleepMinutes.isEmpty) -1 else allSleepMinutes.groupBy(identity).mapValues(_.size).maxBy(_._2)._2
   }
 
-  case class Entry(time: LocalDateTime, id: Option[Int], action: Int) { //action 1=start, 2=sleep, 3=wake
-    override def toString: String = action match {
-      case 1 => s"[$time] Guard #${id.get} begins shift"
-      case 2 => s"[$time] falls asleep"
-      case 3 => s"[$time] wakes up"
-    }
-  }
+  case class Entry(time: LocalDateTime, id: Option[Int], action: Int) //action 1=start, 2=sleep, 3=wake
 
-  val startRegex =
-    """\[(.*?)\] Guard #(\d+) begins shift""".r
+  val startRegex = """\[(.*?)\] Guard #(\d+) begins shift""".r
   val sleepRegex = """\[(.*?)\] falls asleep""".r
   val wakeRegex = """\[(.*?)\] wakes up""".r
 
@@ -41,7 +34,7 @@ object day4 extends App {
   }.sortBy(_.time)
 
   val shifts = entries.foldLeft(List[Shift]()) {
-    case (acc, Entry(time, Some(id), 1)) => Shift(id, time) :: acc
+    case (acc, Entry(_, Some(id), 1)) => Shift(id) :: acc
     case (acc, Entry(time, None, 2)) => acc.head.copy(sleepTimes = acc.head.sleepTimes :+ time) :: acc.tail
     case (acc, Entry(time, None, 3)) => acc.head.copy(wakeTimes = acc.head.wakeTimes :+ time) :: acc.tail
   }

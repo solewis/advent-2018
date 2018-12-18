@@ -24,19 +24,11 @@ object day4 extends App {
   val sleepRegex = """\[(.*?)\] falls asleep""".r
   val wakeRegex = """\[(.*?)\] wakes up""".r
 
-  implicit val localDateOrdering: Ordering[LocalDateTime] = _ compareTo _
   val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
-  val entries = input.map {
-    case startRegex(time, id) => Entry(LocalDateTime.parse(time, pattern), Some(id.toInt), 1)
-    case sleepRegex(time) => Entry(LocalDateTime.parse(time, pattern), None, 2)
-    case wakeRegex(time) => Entry(LocalDateTime.parse(time, pattern), None, 3)
-  }.sortBy(_.time)
-
-  val shifts = entries.foldLeft(List[Shift]()) {
-    case (acc, Entry(_, Some(id), 1)) => Shift(id) :: acc
-    case (acc, Entry(time, None, 2)) => acc.head.copy(sleepTimes = acc.head.sleepTimes :+ time) :: acc.tail
-    case (acc, Entry(time, None, 3)) => acc.head.copy(wakeTimes = acc.head.wakeTimes :+ time) :: acc.tail
+  val shifts = input.sorted.foldLeft(List[Shift]()) {
+    case (acc, startRegex(_, id)) => Shift(id.toInt) :: acc
+    case (acc, sleepRegex(time)) => acc.head.copy(sleepTimes = acc.head.sleepTimes :+ LocalDateTime.parse(time, pattern)) :: acc.tail
+    case (acc, wakeRegex(time)) => acc.head.copy(wakeTimes = acc.head.wakeTimes :+ LocalDateTime.parse(time, pattern)) :: acc.tail
   }
 
   val guards = shifts.groupBy(_.id).map(Guard.tupled)

@@ -16,14 +16,14 @@ object day7 extends App {
     .groupBy(_._1)
     .mapValues(_.flatMap(_._2))
 
-  def dependenciesMet(step: String, completedSteps: Set[String]): Boolean = stepDependencies(step).forall(completedSteps.contains)
+  def dependenciesMet(step: String, completed: String): Boolean = stepDependencies(step).forall(completed.contains)
 
   @tailrec
-  def getOrder(availableSteps: Set[String], completedSteps: Set[String] = Set(), order: String = ""): String = {
+  def getOrder(availableSteps: Set[String], order: String = ""): String = {
     if (availableSteps.isEmpty) order
     else {
-      val nextStep = availableSteps.filter(dependenciesMet(_, completedSteps)).min
-      getOrder(availableSteps.filter(_ != nextStep) ++ stepDependents(nextStep), completedSteps + nextStep, order + nextStep)
+      val nextStep = availableSteps.filter(dependenciesMet(_, order)).min
+      getOrder(availableSteps.filter(_ != nextStep) ++ stepDependents(nextStep), order + nextStep)
     }
   }
 
@@ -35,7 +35,7 @@ object day7 extends App {
 
   case class Second(availableSteps: Set[String],
                     inProgressSteps: Set[(String, Int)] = Set(),
-                    completedSteps: Set[String] = Set(),
+                    completed: String = "",
                     workersAvailable: Int = 5,
                     second: Int = -1) {
     def hasNext: Boolean = inProgressSteps.nonEmpty || availableSteps.nonEmpty
@@ -43,19 +43,18 @@ object day7 extends App {
     def next: Second = {
       val newlyCompletedSteps = inProgressSteps.filter(_._2 == 1).map(_._1)
       val tempWorkersAvailable = workersAvailable + newlyCompletedSteps.size
-      val newCompletedSteps = newlyCompletedSteps ++ completedSteps
-      val newlyInProgressSteps = availableSteps.filter(dependenciesMet(_, newCompletedSteps)).map(c => c -> (60 + c.charAt(0) - 64)).take(tempWorkersAvailable)
+      val newCompleted = completed + newlyCompletedSteps.mkString
+      val newlyInProgressSteps = availableSteps.filter(dependenciesMet(_, newCompleted)).map(c => c -> (60 + c.charAt(0) - 64)).take(tempWorkersAvailable)
       val finalWorkersAvailable = tempWorkersAvailable - newlyInProgressSteps.size
       val newAvailableSteps = availableSteps.diff(newlyInProgressSteps.map(_._1)) ++ newlyInProgressSteps.map(_._1).flatMap(stepDependents)
       val newInProgressSteps = inProgressSteps.filterNot(a => newlyCompletedSteps.contains(a._1)).map(a => a._1 -> (a._2 - 1)) ++ newlyInProgressSteps
       val result = copy(
         availableSteps = newAvailableSteps,
         inProgressSteps = newInProgressSteps,
-        completedSteps = newCompletedSteps,
+        completed = newCompleted,
         workersAvailable = finalWorkersAvailable,
         second = second + 1
       )
-//      println(result)
       result
     }
   }

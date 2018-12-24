@@ -2,23 +2,23 @@ import scala.io.Source
 
 object day8 extends App {
 
-  val input = Source.fromResource("day8.txt").getLines.next.split(" ").toList.map(_.toInt)
+  val input = Source.fromResource("day8.txt").getLines.next.split(" ").map(_.toInt).toIterator
 
-  case class Node(children: Vector[Node], metadata: List[Int]) {
+  case class Node(children: List[Node], metadata: List[Int]) {
     def totalMetadata: Int = metadata.sum + children.map(_.totalMetadata).sum
 
-    def totalValue: Int = if (children.isEmpty) totalMetadata else metadata.map(m => children.lift(m - 1).map(_.totalValue).getOrElse(0)).sum
+    def totalValue: Int = if (children.isEmpty) totalMetadata else metadata.flatMap(m => children.lift(m - 1).map(_.totalValue)).sum
   }
 
-  def parseNodes(numNodes: Int, input: List[Int]): (List[Node], List[Int]) = {
-    (0 until numNodes).foldLeft(List[Node](), input) { case ((nodes, remainingInput), _) =>
-      val numChildren :: numMetadata :: tail = remainingInput
-      val (children, newRemainingInput) = parseNodes(numChildren, tail)
-      (nodes :+ Node(children.toVector, newRemainingInput.take(numMetadata))) -> newRemainingInput.drop(numMetadata)
-    }
+  def parseNode(input: Iterator[Int]): Node = {
+    val numChildren = input.next
+    val numMetadata = input.next
+    val children = (0 until numChildren).map(_ => parseNode(input))
+    val metadata = (0 until numMetadata).map(_ => input.next)
+    Node(children.toList, metadata.toList)
   }
 
-  val headNode = parseNodes(1, input)._1.head
+  val headNode = parseNode(input)
 
   val part1 = headNode.totalMetadata
   println(s"PART 1: $part1")

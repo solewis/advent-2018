@@ -1,5 +1,6 @@
+package advent2018
+
 import scala.annotation.tailrec
-import scala.collection.immutable.NumericRange
 import scala.io.Source
 
 object day10 extends App {

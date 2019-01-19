@@ -1,3 +1,5 @@
+package advent2018
+
 object day11 extends App {
 
   val SERIAL_NUMBER = 8444

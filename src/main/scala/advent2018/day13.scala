@@ -1,3 +1,5 @@
+package advent2018
+
 import scala.io.Source
 
 object day13 extends App {

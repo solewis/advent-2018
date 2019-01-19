@@ -1,3 +1,5 @@
+package advent2018
+
 import java.util
 
 object day9 extends App {

@@ -1,3 +1,5 @@
+package advent2018
+
 object day14 extends App {
 
   val input = "380621"

@@ -1,3 +1,5 @@
+package advent2018
+
 import scala.annotation.tailrec
 import scala.io.Source
 

@@ -1,3 +1,5 @@
+package advent2018
+
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

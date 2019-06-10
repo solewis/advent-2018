@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strconv"
@@ -24,7 +23,7 @@ type group struct {
 	weaknesses, immunities     []string
 }
 
-type army []*group
+type army *[]group
 
 func parse(filename string) (immuneSystem, infection army) {
 	dat, err := ioutil.ReadFile(filename)
@@ -33,11 +32,11 @@ func parse(filename string) (immuneSystem, infection army) {
 
 	is := make([]group, 0)
 	inf := make([]group, 0)
-	re := regexp.MustCompile(`(\d+) units each with (\d+) hit points (?:\((.+)\) )?with an attack that does (\d+) (\w+) damage at initiative (\d+)`)
+	fullRegex := regexp.MustCompile(`(\d+) units each with (\d+) hit points (?:\((.+)\) )?with an attack that does (\d+) (\w+) damage at initiative (\d+)`)
+	innerRegex := regexp.MustCompile(`(weak|immune) to (.+)`)
 	//immune to radiation; weak to fire, cold
 	var current *[]group
 	for _, l := range lines {
-		fmt.Println(l)
 		switch l {
 		case "Immune System:":
 			current = &is
@@ -49,22 +48,35 @@ func parse(filename string) (immuneSystem, infection army) {
 			continue
 		}
 
-		matches := re.FindStringSubmatch(l)
+		matches := fullRegex.FindStringSubmatch(l)
 		units, _ := strconv.Atoi(matches[1])
 		hp, _ := strconv.Atoi(matches[2])
 		atk, _ := strconv.Atoi(matches[4])
 		atkType := matches[5]
 		initiative, _ := strconv.Atoi(matches[6])
+
+		weaknesses := make([]string, 0)
+		immunities := make([]string, 0)
+		for _, wi := range strings.Split(matches[3], ";") {
+			inner := innerRegex.FindStringSubmatch(wi)
+			switch {
+			case inner[1] == "weak":
+				weaknesses = append(weaknesses, strings.Split(inner[2], ", ")...)
+			case inner[1] == "immune":
+				immunities = append(immunities, strings.Split(inner[2], ", ")...)
+			}
+		}
 		*current = append(*current, group{
 			units: units,
 			hp: hp,
 			atk: atk,
 			initiative: initiative,
 			atkType: atkType,
+			weaknesses: weaknesses,
+			immunities: immunities,
 		})
-		fmt.Println(matches)
 	}
-	return
+	return &is, &inf
 }
 
 func check(e error) {
